@@ -1,0 +1,8 @@
+#!/bin/bash
+#do not resolve symlinks to not end up in libobi
+project_root="${project_root:-"$(realpath -s "$(dirname "${BASH_SOURCE[0]}")")"}"
+
+export cmake_var_tests="${cmake_var_tests:-"-DEXTGRAPH_TESTS=ON"}"
+export cmake_var_examples="${cmake_var_examples:-"-DEXTGRAPH_EXAMPLES=ON"}"
+
+echo "ext-graph - project_root: $project_root"
