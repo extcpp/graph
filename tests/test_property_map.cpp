@@ -9,18 +9,24 @@ template <ext::graph::LValuePropertyMap T>
 
 TEST(property_maps, associative_property_map) {
     {
-        auto map = std::map<int,int>();
+        auto map = std::map<int,std::string>();
         ext::graph::associative_property_map pmap(map);
 
         testLValuePropertyConcept(pmap);
-        put(pmap,1,2);
-        auto actual = get(pmap,1);
-        ASSERT_EQ(2,actual);
+        put(pmap,1,"foo");
+
+        auto& actual = get(pmap,1);
+        ASSERT_EQ("foo",actual);
+
+        actual.append("bar");
+
+        auto actual_update = get(pmap,1);
+        ASSERT_EQ("foobar",actual_update);
     }
 
     {
-        auto map = std::map<int,int>();
-        map[1] = 2;
+        auto map = std::map<int,std::string>();
+        map[1] = "foo";
 
         auto const& cmap = map;
         ext::graph::associative_property_map cpmap(cmap);
@@ -28,8 +34,10 @@ TEST(property_maps, associative_property_map) {
         testLValuePropertyConcept(cpmap); // how can the constness be checked?
         //put(cpmap,1,3); // fails to compile -- good
 
-        auto actual = get(cpmap,1);
-        ASSERT_EQ(2,actual);
+        auto& actual = get(cpmap,1);
+        ASSERT_EQ("foo",actual);
+
+        //actual.append("bar"); // fails to compile -- good
     }
 
 
