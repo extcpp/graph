@@ -63,6 +63,7 @@ target_include_directories(ext-graph INTERFACE
 target_compile_features(ext-graph INTERFACE cxx_std_20)
 target_compile_definitions(ext-graph INTERFACE EXTGRAPH_HEADER_ONLY_LIB)
 target_compile_definitions(ext-graph INTERFACE $<$<BOOL:${EXTGRAPH_EXCEPTIONS}>:EXTGRAPH_EXCEPTIONS=1>)
+target_compile_options(ext-graph INTERFACE -fconcepts -fconcepts-diagnostics-depth=2)
 
 # set up folder structure for XCode and VisualStudio
 # set_target_properties (ext-graph PROPERTIES FOLDER libext) # not for INTERFACE libs
