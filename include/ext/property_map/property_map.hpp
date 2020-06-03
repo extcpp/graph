@@ -13,30 +13,34 @@
 
 namespace ext { namespace graph {
 
-    template <typename T>
-    concept PropertyMap = requires(T map) {
-        typename T::value_type;
-        typename T::key_type;
-        typename T::reference;
+    template<typename T>
+    struct property_map_trait {
+        using value_type = typename T::value_type;
+        using key_type = typename T::key_type;
+        using reference = typename T::reference;
     };
 
-    // TODO add traits to allow the implementation of put / get
-    // for arbritary types without the need of a wrapper class
+    template <typename T, typename Trait = property_map_trait<T>>
+    concept PropertyMap = requires(Trait t) {
+        typename Trait::value_type;
+        typename Trait::key_type;
+        typename Trait::reference;
+    };
 
-    template <typename T>
+    template <typename T, typename Trait = property_map_trait<T>>
     concept ReadablePropertyMap =
         PropertyMap<T> &&
-        requires (T map, typename T::key_type key) { { get(map, key) } -> std::same_as<typename T::reference>; };
+        requires (T map, typename Trait::key_type key) { { get(map, key) } -> std::same_as<typename Trait::reference>; };
 
-    template <typename T>
+    template <typename T, typename Trait = property_map_trait<T>>
     concept WriteablePropertyMap =
         PropertyMap<T> && ReadablePropertyMap<T> &&
-        requires (T map, typename T::key_type key, typename T::value_type value) { { put(map, key, value) } -> std::same_as<void>; };
+        requires (T map, typename Trait::key_type key, typename Trait::value_type value) { { put(map, key, value) } -> std::same_as<void>; };
 
-    template <typename T>
+    template <typename T, typename Trait = property_map_trait<T>>
     concept LValuePropertyMap =
         PropertyMap<T> && WriteablePropertyMap<T> &&
-        ( std::is_same_v<typename T::reference, typename T::value_type const&> || std::is_same_v<typename T::reference, typename T::value_type&> );
+        ( std::is_same_v<typename Trait::reference, typename Trait::value_type const&> || std::is_same_v<typename T::reference, typename T::value_type&> );
 
   // CRTP base class that will provide freestanding put / get
   // functions, when used as base class.
@@ -44,16 +48,16 @@ namespace ext { namespace graph {
   template <typename Map>
   struct put_get_base { };
 
-  template <typename Map>
+  template <typename Map, typename Trait = property_map_trait<Map>>
   typename Map::reference
-  get(const put_get_base<Map>& pa, typename Map::key_type const& k) {
-    typename Map::reference v = static_cast<const Map&>(pa)[k];
+  get(const put_get_base<Map>& pa, typename Trait::key_type const& k) {
+    typename Trait::reference v = static_cast<const Map&>(pa)[k];
     return v;
   }
 
-  template <typename Map>
+  template <typename Map, typename Trait = property_map_trait<Map>>
   void
-  put(const put_get_base<Map>& pa, typename Map::key_type const& k, typename Map::value_type const& v) {
+  put(const put_get_base<Map>& pa, typename Trait::key_type const& k, typename Trait::value_type const& v) {
     static_cast<const Map&>(pa)[k] = v;
   }
 
